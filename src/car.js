@@ -2,14 +2,19 @@
 // body. Rear-wheel drive, front-wheel steering, with a chase-friendly chassis.
 import * as THREE from 'three';
 
-const ENGINE_FORCE = 26;
-const REVERSE_FORCE = 20;
-const BRAKE_FORCE = 11;
+const ENGINE_FORCE = 44;
+const REVERSE_FORCE = 28;
+const BRAKE_FORCE = 12;
 const COAST_BRAKE = 0;          // no auto-brake — coasting must not pitch the car
-const MAX_SPEED = 13;           // m/s top-speed cap (~47 km/h)
-const MAX_SPEED_2 = 11 * 11; // squared top speed for cheap comparison
+const MAX_SPEED_2 = 17 * 17;    // squared top-speed cap (~61 km/h) for the bigger island
 const MAX_STEER = 0.5;
 const STEER_LERP = 0.16;
+
+// nitro boost (Space)
+const NITRO_MULT = 2.4;         // engine force multiplier while boosting
+const NITRO_SPEED_2 = 27 * 27;  // raised top-speed cap while boosting (~97 km/h)
+const NITRO_DURATION = 2.8;     // seconds of boost from a full tank
+const NITRO_RECHARGE = 5.5;     // seconds to refill from empty
 
 const HX = 0.9, HY = 0.32, HZ = 1.5;       // chassis half-extents
 const WHEEL_R = 0.42;
@@ -24,7 +29,7 @@ export function createCar({ RAPIER, world, scene, spawn }) {
     RAPIER.RigidBodyDesc.dynamic()
       .setTranslation(spawn.x, spawn.y, spawn.z)
       .setRotation(spawnRot)
-      .setLinearDamping(0.35)
+      .setLinearDamping(0.1)
       .setAngularDamping(0.7)
       .setCanSleep(false),
   );
@@ -98,15 +103,38 @@ export function createCar({ RAPIER, world, scene, spawn }) {
     return { pivot, mesh, front: i < 2 };
   });
 
+  // exhaust flames (shown while boosting)
+  const flames = [-0.42, 0.42].map((x) => {
+    const f = new THREE.Mesh(
+      new THREE.ConeGeometry(0.24, 1.2, 8),
+      new THREE.MeshBasicMaterial({ color: 0xffb24d, transparent: true, opacity: 0.92, toneMapped: false }),
+    );
+    f.position.set(x, -0.05, -HZ - 0.35);
+    f.rotation.x = Math.PI / 2; // tip points backward (-Z)
+    f.visible = false;
+    group.add(f);
+    return f;
+  });
+
   let steer = 0;
   let spin = 0;
+  let nitroFuel = 1;
+  let boosting = false;
 
   function update(dt, input) {
     // horizontal speed² from the chassis velocity (currentVehicleSpeed is flaky)
     const v = body.linvel();
     const sp2 = v.x * v.x + v.z * v.z;
+
+    // nitro: drains while boosting, recharges otherwise
+    boosting = !!input.nitro && nitroFuel > 0.001;
+    nitroFuel = boosting
+      ? Math.max(0, nitroFuel - dt / NITRO_DURATION)
+      : Math.min(1, nitroFuel + dt / NITRO_RECHARGE);
+
     let engine = 0;
-    if (input.forward && sp2 < MAX_SPEED_2) engine = ENGINE_FORCE;
+    if (boosting && sp2 < NITRO_SPEED_2) engine = ENGINE_FORCE * NITRO_MULT;
+    else if (input.forward && sp2 < MAX_SPEED_2) engine = ENGINE_FORCE;
     else if (input.back && sp2 < MAX_SPEED_2 * 0.5) engine = -REVERSE_FORCE;
     controller.setWheelEngineForce(2, engine);
     controller.setWheelEngineForce(3, engine);
@@ -116,8 +144,7 @@ export function createCar({ RAPIER, world, scene, spawn }) {
     controller.setWheelSteering(0, steer);
     controller.setWheelSteering(1, steer);
 
-    const brake = input.brake ? BRAKE_FORCE : engine === 0 ? COAST_BRAKE : 0;
-    for (let i = 0; i < 4; i++) controller.setWheelBrake(i, brake);
+    for (let i = 0; i < 4; i++) controller.setWheelBrake(i, 0);
 
     controller.updateVehicle(dt);
   }
@@ -139,6 +166,10 @@ export function createCar({ RAPIER, world, scene, spawn }) {
       if (w.front) w.pivot.rotation.y = steer;
       w.mesh.rotation.x = spin;
     }
+    for (const f of flames) {
+      f.visible = boosting;
+      if (boosting) f.scale.set(0.8 + Math.random() * 0.5, 0.6 + Math.random() * 0.8, 0.8 + Math.random() * 0.5);
+    }
   }
 
   function reset() {
@@ -151,5 +182,7 @@ export function createCar({ RAPIER, world, scene, spawn }) {
   return {
     group, body, update, sync, reset,
     speed: () => { const v = body.linvel(); return Math.hypot(v.x, v.z); },
+    nitro: () => nitroFuel,
+    boosting: () => boosting,
   };
 }

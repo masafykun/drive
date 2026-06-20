@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="description" content="DRIVE（走）— 低ポリの島をミニカーで自由に走り回る3Dワールド。Three.js + Rapier物理エンジン。坂でジャンプ、クレートを蹴散らし、コインを集めよう。" />
+  <meta name="description" content="DRIVE（走）— 低ポリの島をミニカーで走り回る3Dワールド。Three.js + Rapier物理。光るゲートを順に駆け抜けるタイムアタック、コイン集め、坂ジャンプ。" />
   <meta name="theme-color" content="#3f86d4" />
   <meta property="og:title" content="DRIVE — 走" />
-  <meta property="og:description" content="低ポリの島をミニカーで走り回る3Dワールド。" />
+  <meta property="og:description" content="低ポリの島をミニカーで走り回る3Dワールド。タイムアタック＆コイン集め。" />
   <meta property="og:type" content="website" />
   <title>DRIVE — 走</title>
 </head>
@@ -25,17 +25,30 @@
     <div class="stat"><b id="speed">0</b><span class="unit">km/h</span></div>
   </div>
 
-  <div class="help">
-    <kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 運転 ・ <kbd>Space</kbd> ブレーキ ・ <kbd>R</kbd> リセット
+  <div class="race">
+    <div class="race-row"><span class="lbl">TIME</span><b id="timer">—</b></div>
+    <div class="race-row"><span class="lbl">GATE</span><b id="cp">0/6</b></div>
+    <div class="race-row"><span class="lbl">BEST</span><b id="best">—</b></div>
   </div>
 
-  <!-- touch controls -->
+  <div id="banner"><b id="banner-title"></b><span id="banner-sub"></span></div>
+
+  <div class="nitro">
+    <span class="nlbl">NITRO</span>
+    <div class="nbar"><i id="nitro"></i></div>
+  </div>
+
+  <div class="help">
+    <kbd>W A S D</kbd> / <kbd>↑ ↓ ← →</kbd> 運転 ・ <kbd>Space</kbd> ニトロ🔥 ・ <kbd>S</kbd> ブレーキ ・ <kbd>R</kbd> リセット　|　光るゲートを順に通ってタイムアタック
+  </div>
+
   <div class="touch">
     <button id="btn-left" aria-label="left">◀</button>
     <div class="touch-col">
       <button id="btn-up" aria-label="forward">▲</button>
       <button id="btn-down" aria-label="back">▼</button>
     </div>
+    <button id="btn-nitro" aria-label="nitro">🔥</button>
     <button id="btn-right" aria-label="right">▶</button>
   </div>
 

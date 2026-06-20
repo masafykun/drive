@@ -1,8 +1,8 @@
 # DRIVE — 走
 
-Explore a low-poly island in a little car. Drive over ramps, scatter crates,
-weave between trees and rocks, and collect the coins — a physics-driven 3D
-playground in the browser.
+Explore a low-poly island in a little car. Race the clock through a circuit of
+glowing gates, hit the nitro for a boost, scatter crates, and collect all the
+coins — a physics-driven 3D playground in the browser.
 
 **Live:** https://drive.1qaz.jp
 
@@ -12,33 +12,38 @@ playground in the browser.
 
 ## Controls
 
-- **W A S D** or **arrow keys** — drive & steer
-- **Space** — brake
+- **W A S D** / **arrow keys** — drive & steer
+- **Space** — 🔥 nitro boost (refillable gauge)
+- **S** — brake / reverse
 - **R** — flip the car back / reset to spawn
-- On touch devices, on-screen buttons appear automatically.
+- On touch devices, on-screen buttons appear automatically (including nitro).
 
-## What's in the box
+## Things to do
 
-- A real ray-cast **vehicle** (Rapier's `DynamicRayCastVehicleController`):
-  rear-wheel drive, front-wheel steering, suspension, and a low centre of mass
-  so it stays planted instead of tipping over.
-- A hand-placed island: ramps to launch off, a stack of **knockable crates**
-  (dynamic rigid bodies), trees and rocks to dodge, a candy-striped landmark,
-  and 18 spinning coins to collect.
-- A smooth **chase camera**, low-poly flat-shaded art, soft shadows, and a
-  gradient sky.
+- **Time attack** — drive through the glowing gates in order (a beacon marks the
+  next one). Cross the start gate to begin the clock and again to finish a lap;
+  your best lap is saved locally.
+- **Nitro** — hold Space for a burst of speed (≈60 → ≈95 km/h) with exhaust
+  flames. The gauge drains as you boost and refills when you don't.
+- **Collect 26 coins** scattered across the island for an all-clear celebration.
+- **Make a mess** — ramps to launch off, a stack of knockable crates, trees and
+  rocks to weave between.
 
-![exploring](docs/02-world.png)
+| Drifting the island | Nitro 🔥 |
+|---|---|
+| ![world](docs/02-world.png) | ![nitro](docs/03-nitro.png) |
 
 ## How it works
 
 - **[Three.js](https://threejs.org/)** renders the scene; every object's mesh is
   driven each frame from its **[Rapier](https://rapier.rs/)** rigid body.
-- The car is a single dynamic chassis collider plus a vehicle controller that
-  ray-casts each wheel against the ground for suspension and traction. Engine
-  force, steering angle and brakes are fed in from the keyboard each step.
-- A top-speed cap and a deliberately low centre of mass keep it arcade-friendly:
-  quick to control, hard to flip.
+- The car is a single dynamic chassis collider plus a ray-cast
+  **vehicle controller** (rear-wheel drive, front-wheel steering, suspension),
+  with a low centre of mass and a top-speed cap so it's quick to control and
+  hard to flip. Nitro raises the cap and multiplies the engine force.
+- Gates are pure-visual arches; a lap is tracked by driving through them in
+  order. Coins are simple distance checks. Celebrations fire an instanced
+  confetti burst.
 
 ## Tech stack
 
@@ -49,12 +54,14 @@ playground in the browser.
 ## Project structure
 
 ```
-index.html      # canvas + HUD (coins, speed, controls, touch buttons)
+index.html      # canvas + HUD (coins, speed, lap timer, nitro, touch controls)
 src/
-  main.js       # renderer, Rapier init, chase camera, coins, HUD, loop
-  world.js      # the island: ground, walls, ramps, crates, trees, coins
-  car.js        # vehicle controller + low-poly car + input → forces
-  style.css     # HUD / loading / touch controls
+  main.js       # renderer, Rapier init, chase camera, coins, race + fx wiring
+  world.js      # the island: ground, walls, ramps, crates, decor, coins, gates
+  car.js        # vehicle controller + low-poly car + nitro + input → forces
+  race.js       # time-attack: gate order, lap timer, best-time persistence
+  fx.js         # instanced confetti burst
+  style.css     # HUD / loading / nitro gauge / touch controls
 ```
 
 ## Run locally
