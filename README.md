@@ -9,7 +9,7 @@
 ![Vite](https://img.shields.io/badge/Vite-build-646CFF?style=flat-square&logo=vite&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)
 
-🔗 **[Live Demo](https://drive.1qaz.jp)**
+🔗 **[Live Demo](https://masafykun.github.io/drive/)**
 
 ---
 
